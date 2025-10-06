@@ -1,46 +1,36 @@
-version: '3.9'
-services:
-  frontend:
-    build: ./frontend
-    ports:
-      - "5173:5173"
-    depends_on:
-      - server-a
-    environment:
-      - VITE_API_URL=http://localhost:3001
+version: "3.9"
 
+services:
   server-a:
-    build: ./server-a
+    build:
+      context: ./server-a
+      dockerfile: Dockerfile
     ports:
       - "3001:3001"
-    depends_on:
-      - db
-      - server-b
+    volumes:
+      - ./server-a:/app
     environment:
-      - DB_HOST=db
-      - DB_USER=postgres
-      - DB_PASS=postgres
-      - DB_NAME=animals_db
+      - NODE_ENV=development
 
   server-b:
-    build: ./server-b
+    build:
+      context: ./server-b
+      dockerfile: Dockerfile
     ports:
       - "3002:3002"
-    depends_on:
-      - db
+    volumes:
+      - ./server-b:/app
     environment:
-      - DB_HOST=db
-      - DB_USER=postgres
-      - DB_PASS=postgres
-      - DB_NAME=adoptions_db
+      - NODE_ENV=development
 
   db:
     image: postgres:15
+    restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: animals_db
-    volumes:
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      POSTGRES_DB: adoptiondb
     ports:
       - "5432:5432"
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
